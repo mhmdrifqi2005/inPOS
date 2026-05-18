@@ -33,7 +33,6 @@
             overflow: hidden;
         }
 
-        /* Subtle grid overlay */
         .left-panel::before {
             content: '';
             position: absolute;
@@ -45,7 +44,6 @@
             pointer-events: none;
         }
 
-        /* Glow orb */
         .left-panel::after {
             content: '';
             position: absolute;
@@ -58,7 +56,6 @@
             pointer-events: none;
         }
 
-        /* Logo */
         .left-logo {
             position: relative;
             z-index: 1;
@@ -98,7 +95,6 @@
             text-transform: uppercase;
         }
 
-        /* Illustration */
         .illustration {
             position: relative;
             z-index: 1;
@@ -115,7 +111,6 @@
             backdrop-filter: blur(10px);
         }
 
-        /* POS visual elements */
         .pos-screen {
             background: #0d1526;
             border-radius: 12px;
@@ -184,7 +179,6 @@
             font-weight: 600;
         }
 
-        /* Quote / Slogan */
         .quote-section {
             text-align: center;
             margin-top: 1.5rem;
@@ -220,7 +214,6 @@
             position: relative;
         }
 
-        /* Blurred glass overlay on right */
         .right-panel::before {
             content: '';
             position: absolute;
@@ -271,7 +264,6 @@
             font-size: 0.85rem;
         }
 
-        /* Input group */
         .input-group { margin-bottom: 1.25rem; }
 
         .input-group label {
@@ -334,7 +326,6 @@
 
         .toggle-pass:hover { color: rgba(255,255,255,0.5); }
 
-        /* Submit button */
         .btn-login {
             width: 100%;
             padding: 1rem;
@@ -379,7 +370,6 @@
 
         @keyframes spin { to { transform: rotate(360deg); } }
 
-        /* Error message */
         #loginError {
             color: #ff6b6b;
             background: rgba(255, 107, 107, 0.1);
@@ -392,19 +382,15 @@
             text-align: center;
         }
 
-                @media (max-width: 768px) {
+        @media (max-width: 768px) {
             .login-wrapper { grid-template-columns: 1fr; }
-
-            .left-panel {
-                display: none;
-            }
-
+            .left-panel { display: none; }
             .right-panel { padding: 2rem 1.5rem; }
-
             .login-header h2 { font-size: 1.75rem; }
         }
     </style>
 </head>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
 <body>
     <div class="login-wrapper">
         <!-- LEFT PANEL -->
@@ -433,7 +419,7 @@
                         </div>
                         <div class="pos-items">
                             <div class="pos-item">
-                                <div class="pos-item-icon"><img src="/assets/images/nasigoreng.jpg" alt="Nasi Goreng"></div>
+                                <div class="pos-item-icon"><img src="{{ asset('assets/images/nasigoreng.jpg') }}" alt="Nasi Goreng"></div>
                                 <div class="pos-item-info">
                                     <div class="pos-item-name">Nasi Goreng</div>
                                     <div class="pos-item-qty">1x Rp 25.000</div>
@@ -441,7 +427,7 @@
                                 <div class="pos-item-price">Rp 25.000</div>
                             </div>
                             <div class="pos-item">
-                                <div class="pos-item-icon"><img src="/assets/images/es-teh-manis.jpg" alt="Es Teh Manis"></div>
+                                <div class="pos-item-icon"><img src="{{ asset('assets/images/es-teh-manis.jpg') }}" alt="Es Teh Manis"></div>
                                 <div class="pos-item-info">
                                     <div class="pos-item-name">Es Teh Manis</div>
                                     <div class="pos-item-qty">2x Rp 5.000</div>
@@ -449,7 +435,7 @@
                                 <div class="pos-item-price">Rp 10.000</div>
                             </div>
                             <div class="pos-item">
-                                <div class="pos-item-icon"><img src="/assets/images/pisang-goreng.jpg" alt="Pisang Goreng"></div>
+                                <div class="pos-item-icon"><img src="{{ asset('assets/images/pisang-goreng.jpg') }}" alt="Pisang Goreng"></div>
                                 <div class="pos-item-info">
                                     <div class="pos-item-name">Pisang Goreng</div>
                                     <div class="pos-item-qty">1x Rp 10.000</div>
@@ -476,7 +462,11 @@
                 </div>
 
                 <form id="loginForm" onsubmit="return false;">
-                    <div id="loginError"></div>
+                    <div id="loginError">
+                        @if(session('error'))
+                            {{ session('error') }}
+                        @endif
+                    </div>
 
                     <div class="input-group">
                         <label>Username</label>
@@ -514,8 +504,7 @@
                         <span id="loginText">Masuk</span>
                     </button>
                 </form>
-
-                            </div>
+            </div>
         </div>
     </div>
 
@@ -549,10 +538,15 @@
             btn.disabled = true;
             btnText.innerHTML = '<div class="spinner"></div>';
 
+            const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || '';
+
             try {
-                const res = await fetch('/api/auth/login', {
+                const res = await fetch('/login', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': csrfToken
+                    },
                     body: JSON.stringify({ username, password })
                 });
 

@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Produk - inPOS</title>
-    <link rel="stylesheet" href="/assets/css/style.css">
+    <link rel="stylesheet" href="{{ asset('assets/css/style.css') }}">
 </head>
 <body>
     <div class="app-layout">
@@ -155,7 +155,8 @@
         </div>
     </div>
 
-    <script src="/assets/js/app.js"></script>
+    <script src="{{ asset('assets/js/app.js') }}"></script>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <script>
         let products = [];
         let categories = [];
@@ -182,7 +183,7 @@
         function loadCategoryOptions() {
             const select = document.getElementById('productCategory');
             select.innerHTML = '<option value="">-- Pilih Kategori --</option>' +
-                categories.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+                categories.map(c => `<option value="${c.categories_id}">${c.name}</option>`).join('');
         }
 
         function renderProducts(data) {
@@ -202,8 +203,8 @@
                     <td>${p.min_stock}</td>
                     <td>${p.unit || 'pcs'}</td>
                     <td>
-                        <button class="btn btn-sm btn-secondary" onclick="editProduct(${p.id})" title="Edit">&#9998;</button>
-                        <button class="btn btn-sm btn-danger" onclick="confirmDelete(${p.id}, '${p.name.replace(/'/g, "\\'")}')" title="Hapus">&#128465;</button>
+                        <button class="btn btn-sm btn-secondary" onclick="editProduct(${p.products_id})" title="Edit">&#9998;</button>
+                        <button class="btn btn-sm btn-danger" onclick="confirmDelete(${p.products_id}, '${p.name.replace(/'/g, "\\'")}')" title="Hapus">&#128465;</button>
                     </td>
                 </tr>`;
             }).join('');
@@ -236,11 +237,11 @@
         }
 
         async function editProduct(id) {
-            const p = products.find(x => x.id === id);
+            const p = products.find(x => x.products_id === id);
             if (!p) return;
-            document.getElementById('productId').value = p.id;
+            document.getElementById('productId').value = p.products_id;
             document.getElementById('productName').value = p.name;
-            document.getElementById('productCategory').value = p.category_id || '';
+            document.getElementById('productCategory').value = p.categories_id || '';
             document.getElementById('productPrice').value = p.price;
             document.getElementById('productUnit').value = p.unit || '';
             document.getElementById('productStock').value = p.stock;
@@ -254,7 +255,7 @@
             const id = document.getElementById('productId').value;
             const data = {
                 name: document.getElementById('productName').value,
-                category_id: document.getElementById('productCategory').value || null,
+                categories_id: document.getElementById('productCategory').value || null,
                 price: parseInt(document.getElementById('productPrice').value),
                 unit: document.getElementById('productUnit').value || 'pcs',
                 stock: parseInt(document.getElementById('productStock').value) || 0,

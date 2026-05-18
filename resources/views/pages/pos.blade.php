@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kasir (POS) - inPOS</title>
-    <link rel="stylesheet" href="/assets/css/style.css">
+    <link rel="stylesheet" href="{{ asset('assets/css/style.css') }}">
 </head>
 <body>
     <div class="app-layout">
@@ -56,7 +56,6 @@
 
             <div class="page-content" style="padding:1rem;">
                 <div class="pos-layout">
-                    <!-- Product List -->
                     <div class="card" style="display:flex;flex-direction:column;overflow:hidden;">
                         <div class="card-header">
                             <span class="card-title">Pilih Produk</span>
@@ -69,7 +68,6 @@
                         </div>
                     </div>
 
-                    <!-- Cart Panel -->
                     <div class="cart-panel">
                         <div class="cart-header">
                             <span>Keranjang Belanja</span>
@@ -105,9 +103,7 @@
 
                             <div class="cart-actions">
                                 <button class="btn btn-secondary" onclick="clearCart()">Reset</button>
-                                <button class="btn btn-success" onclick="processTransaction()" id="payBtn">
-                                    Bayar Sekarang
-                                </button>
+                                <button class="btn btn-success" onclick="processTransaction()" id="payBtn">Bayar Sekarang</button>
                             </div>
                         </div>
                     </div>
@@ -138,7 +134,7 @@
         </div>
     </div>
 
-    <!-- Receipt Template (hidden) -->
+    <!-- Receipt Template -->
     <div id="receiptTemplate" style="display:none;">
         <div style="text-align:center;">
             <h2 style="margin:0;">inPOS</h2>
@@ -160,7 +156,8 @@
         <p style="text-align:center;font-size:10px;margin:0;">-- Terima Kasih --</p>
     </div>
 
-    <script src="/assets/js/app.js"></script>
+    <script src="{{ asset('assets/js/app.js') }}"></script>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <script>
         let posProducts = [];
         let cart = [];
@@ -202,8 +199,8 @@
             grid.innerHTML = products.map(p => {
                 const disabled = p.stock <= 0 ? 'out-of-stock' : '';
                 const img = getProductImage(p.name);
-                const imgTag = img ? `<img src="/assets/images/${img}" alt="${p.name}">` : `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:1.5rem;">🍽️</div>`;
-                return `<div class="product-item ${disabled}" onclick="addToCart(${p.id})">
+                const imgTag = img ? `<img src="{{ asset('assets/images/${img}') }}" alt="${p.name}">` : `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:1.5rem;">🍽️</div>`;
+                return `<div class="product-item ${disabled}" onclick="addToCart(${p.products_id})">
                     <div class="product-img">${imgTag}</div>
                     <div class="product-name" title="${p.name}">${p.name}</div>
                     <div class="product-price">${formatCurrency(p.price)}</div>
@@ -219,7 +216,7 @@
         }
 
         function addToCart(productId) {
-            const product = posProducts.find(p => p.id === productId);
+            const product = posProducts.find(p => p.products_id === productId);
             if (!product || product.stock <= 0) return;
 
             const existing = cart.find(c => c.id === productId);
@@ -231,7 +228,7 @@
                 existing.quantity++;
             } else {
                 cart.push({
-                    id: product.id,
+                    id: product.products_id,
                     name: product.name,
                     price: parseInt(product.price),
                     quantity: 1,
@@ -326,7 +323,7 @@
 
             try {
                 const items = cart.map(c => ({
-                    product_id: c.id,
+                    products_id: c.id,
                     quantity: c.quantity
                 }));
 
@@ -345,12 +342,11 @@
                         paid,
                         change: paid - total,
                         paymentMethod,
-                        id: data.transaction.id
+                        id: data.transaction.transactions_id
                     };
                     showSuccessModal(data.transaction);
                     clearCart();
 
-                    // Refresh products to update stock
                     const prodRes = await fetch('/api/products');
                     posProducts = await prodRes.json();
                     renderPosProducts(posProducts);
@@ -368,7 +364,7 @@
         function showSuccessModal(transaction) {
             document.getElementById('successAmount').textContent = formatCurrency(lastTransaction.total);
             document.getElementById('successChange').textContent = 'Kembalian: ' + formatCurrency(lastTransaction.change);
-            document.getElementById('successTransactionId').textContent = `No. Transaksi: #${String(transaction.id).padStart(4, '0')}`;
+            document.getElementById('successTransactionId').textContent = `No. Transaksi: #${String(transaction.transactions_id).padStart(4, '0')}`;
             document.getElementById('successModal').classList.add('show');
         }
 

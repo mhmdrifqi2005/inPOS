@@ -4,11 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - inPOS</title>
-    <link rel="stylesheet" href="/assets/css/style.css">
+    <link rel="stylesheet" href="{{ asset('assets/css/style.css') }}">
 </head>
 <body>
     <div class="app-layout">
-        <!-- Sidebar -->
         <aside class="sidebar">
             <div class="sidebar-logo">in<span>POS</span></div>
             <nav class="sidebar-nav">
@@ -47,7 +46,6 @@
             </div>
         </aside>
 
-        <!-- Main Content -->
         <main class="main-content">
             <header class="top-bar">
                 <h1 class="page-title">Dashboard</h1>
@@ -57,7 +55,6 @@
             </header>
 
             <div class="page-content">
-                <!-- Alert Stok Rendah -->
                 <div id="lowStockAlert" class="low-stock-alert" style="display:none;">
                     <h4>
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
@@ -66,7 +63,6 @@
                     <p id="lowStockCount">0 produk memiliki stok di bawah batas minimum.</p>
                 </div>
 
-                <!-- Stats Cards -->
                 <div class="stats-grid" id="statsGrid">
                     <div class="stat-card">
                         <div class="stat-icon blue">
@@ -107,13 +103,12 @@
                 </div>
 
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
-                    <!-- Recent Transactions -->
                     <div class="card">
                         <div class="card-header">
                             <span class="card-title">Transaksi Terakhir</span>
                             <a href="/pos" class="btn btn-sm btn-primary" style="width:auto;padding:0.4rem 0.75rem;" title="Kasir">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/></svg>
-                    </a>
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/></svg>
+                            </a>
                         </div>
                         <div class="table-container">
                             <table>
@@ -132,7 +127,6 @@
                         </div>
                     </div>
 
-                    <!-- Monthly Stats -->
                     <div class="card">
                         <div class="card-header">
                             <span class="card-title">Statistik Bulan Ini</span>
@@ -159,9 +153,9 @@
         </main>
     </div>
 
-    <script src="/assets/js/app.js"></script>
+    <script src="{{ asset('assets/js/app.js') }}"></script>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <script>
-        // Set date display
         const now = new Date();
         document.getElementById('dateDisplay').textContent = now.toLocaleDateString('id-ID', {
             weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
@@ -177,26 +171,23 @@
 
                 const data = await res.json();
 
-                // Update stats
                 document.getElementById('statProducts').textContent = data.products;
                 document.getElementById('statTodaySales').textContent = formatCurrency(data.today.sales);
                 document.getElementById('statTodayTrans').textContent = data.today.transactions;
                 document.getElementById('statLowStock').textContent = data.lowStockAlerts;
 
-                // Month stats
                 document.getElementById('monthSales').textContent = formatCurrency(data.month.sales);
                 document.getElementById('monthTrans').textContent = data.month.transactions;
                 const avg = data.month.transactions > 0 ? Math.round(data.month.sales / data.month.transactions) : 0;
                 document.getElementById('avgSale').textContent = formatCurrency(avg);
 
-                // Recent transactions
                 const tbody = document.getElementById('recentTransTable');
                 if (data.recentTransactions.length === 0) {
                     tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted" style="padding:2rem;">Belum ada transaksi</td></tr>';
                 } else {
                     tbody.innerHTML = data.recentTransactions.map(t => `
                         <tr>
-                            <td>#${String(t.id).padStart(4, '0')}</td>
+                            <td>#${String(t.transactions_id).padStart(4, '0')}</td>
                             <td>${t.kasir_name}</td>
                             <td>${formatCurrency(t.total_amount)}</td>
                             <td>${formatDate(t.transaction_date)}</td>
@@ -204,7 +195,6 @@
                     `).join('');
                 }
 
-                // Low stock alert
                 if (data.lowStockAlerts > 0) {
                     document.getElementById('lowStockAlert').style.display = 'block';
                     document.getElementById('lowStockCount').textContent =

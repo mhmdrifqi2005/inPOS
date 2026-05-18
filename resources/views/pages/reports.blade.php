@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Laporan - inPOS</title>
-    <link rel="stylesheet" href="/assets/css/style.css">
+    <link rel="stylesheet" href="{{ asset('assets/css/style.css') }}">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 </head>
 <body>
@@ -169,7 +169,8 @@
         </main>
     </div>
 
-    <script src="/assets/js/app.js"></script>
+    <script src="{{ asset('assets/js/app.js') }}"></script>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <script>
         let currentReportType = 'sales';
         let currentTransactions = [];
@@ -178,7 +179,6 @@
             const authorized = await protectPage();
             if (!authorized) return;
 
-            // Set default date range (today)
             const today = new Date().toISOString().split('T')[0];
             document.getElementById('startDate').value = today;
             document.getElementById('endDate').value = today;
@@ -215,14 +215,12 @@
 
                 currentTransactions = data.transactions || [];
 
-                // Update summary
                 const total = parseFloat(data.summary?.total_sales || 0);
                 const count = data.summary?.total_transactions || 0;
                 document.getElementById('totalSalesAmount').textContent = formatCurrency(total);
                 document.getElementById('totalTransactions').textContent = count;
                 document.getElementById('avgTransaction').textContent = formatCurrency(count > 0 ? Math.round(total / count) : 0);
 
-                // Render table
                 const tbody = document.getElementById('salesTable');
                 if (currentTransactions.length === 0) {
                     tbody.innerHTML = '<tr><td colspan="8" class="text-center text-muted" style="padding:2rem;">Tidak ada data transaksi</td></tr>';
@@ -231,7 +229,7 @@
                 tbody.innerHTML = currentTransactions.map((t, i) => `
                     <tr>
                         <td>${i + 1}</td>
-                        <td>#${String(t.id).padStart(4, '0')}</td>
+                        <td>#${String(t.transactions_id).padStart(4, '0')}</td>
                         <td>${t.kasir_name}</td>
                         <td><span class="badge badge-info">${t.payment_method}</span></td>
                         <td><strong>${formatCurrency(t.total_amount)}</strong></td>
@@ -261,7 +259,7 @@
                 }
                 tbody.innerHTML = products.map((p, i) => `
                     <tr>
-                        <td>${i + 1 === 1 ? '🥇' : i + 1 === 2 ? '🥈' : i + 1 === 3 ? '🥉' : i + 1}</td>
+                        <td>${i + 1 === 1 ? '1' : i + 1 === 2 ? '2' : i + 1 === 3 ? '3' : i + 1}</td>
                         <td><strong>${p.name}</strong></td>
                         <td>${p.category_name || '-'}</td>
                         <td>${p.total_sold} item</td>
@@ -349,7 +347,7 @@
             }
             const headers = ['ID', 'Kasir', 'Metode Bayar', 'Total', 'Bayar', 'Kembalian', 'Tanggal'];
             const rows = currentTransactions.map(t => [
-                `#${String(t.id).padStart(4, '0')}`,
+                `#${String(t.transactions_id).padStart(4, '0')}`,
                 t.kasir_name,
                 t.payment_method,
                 t.total_amount,

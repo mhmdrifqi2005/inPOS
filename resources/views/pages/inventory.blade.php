@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Inventaris - inPOS</title>
-    <link rel="stylesheet" href="/assets/css/style.css">
+    <link rel="stylesheet" href="{{ asset('assets/css/style.css') }}">
 </head>
 <body>
     <div class="app-layout">
@@ -56,7 +56,6 @@
             </header>
 
             <div class="page-content">
-                <!-- Low Stock Alert -->
                 <div id="lowStockAlert" class="low-stock-alert" style="display:none;">
                     <h4>
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
@@ -163,7 +162,8 @@
         </div>
     </div>
 
-    <script src="/assets/js/app.js"></script>
+    <script src="{{ asset('assets/js/app.js') }}"></script>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <script>
         let inventory = [];
         let allProducts = [];
@@ -205,8 +205,8 @@
                     <td>${p.min_stock}</td>
                     <td><span class="badge ${statusBadge}">${statusText}</span></td>
                     <td>
-                        <button class="btn btn-sm btn-success" onclick="openRestockFor(${p.id})" title="Tambah Stok">+</button>
-                        <button class="btn btn-sm btn-secondary" onclick="showHistory(${p.id}, '${p.name.replace(/'/g, "\\'")}')" title="Riwayat">&#128337;</button>
+                        <button class="btn btn-sm btn-success" onclick="openRestockFor(${p.products_id})" title="Tambah Stok">+</button>
+                        <button class="btn btn-sm btn-secondary" onclick="showHistory(${p.products_id}, '${p.name.replace(/'/g, "\\'")}')" title="Riwayat">&#128337;</button>
                     </td>
                 </tr>`;
             }).join('');
@@ -236,7 +236,7 @@
         function openRestockModal() {
             const select = document.getElementById('restockProduct');
             select.innerHTML = '<option value="">-- Pilih Produk --</option>' +
-                allProducts.map(p => `<option value="${p.id}">${p.name} (Stok: ${p.stock})</option>`).join('');
+                allProducts.map(p => `<option value="${p.products_id}">${p.name} (Stok: ${p.stock})</option>`).join('');
             document.getElementById('restockForm').reset();
             document.getElementById('restockInfo').innerHTML = '<p>Pilih produk untuk melihat info stok</p>';
             document.getElementById('restockModal').classList.add('show');
@@ -254,7 +254,7 @@
 
         function updateRestockInfo() {
             const productId = parseInt(document.getElementById('restockProduct').value);
-            const product = allProducts.find(p => p.id === productId);
+            const product = allProducts.find(p => p.products_id === productId);
             if (!product) {
                 document.getElementById('restockInfo').innerHTML = '<p>Pilih produk untuk melihat info stok</p>';
                 return;
